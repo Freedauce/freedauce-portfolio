@@ -129,6 +129,28 @@ a.cred:hover span:first-child{text-decoration:underline;text-underline-offset:5p
 .contact .big{font-size:clamp(2.8rem,8.6vw,7.6rem);margin-bottom:2.4rem}
 .mail{display:inline-block;font:700 clamp(1.25rem,3.6vw,2.4rem)/1.2 var(--grot);font-stretch:112%;text-decoration:none;border-bottom:4px solid var(--orange);user-select:all;word-break:break-all}
 .links{display:flex;gap:10px;margin-top:2rem;flex-wrap:wrap}
+.cgrid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:clamp(32px,6vw,96px);align-items:start}
+.cform{display:grid;gap:18px}
+.field{display:grid;gap:8px}
+.field label{font:500 .82rem/1 var(--mono);color:var(--orange)}
+.field input,.field textarea{width:100%;font:500 1.05rem/1.45 var(--grot);color:var(--ink);background:transparent;border:0;border-bottom:2px solid var(--ink);border-radius:0;padding:.55em 0;outline:none;resize:vertical}
+.field textarea{min-height:7.5em}
+.field input:focus,.field textarea:focus{border-bottom-color:var(--orange)}
+.field input::placeholder,.field textarea::placeholder{color:var(--dust)}
+.field.bad input,.field.bad textarea{border-bottom-color:#B3261E}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.send{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:6px}
+.send button{font:400 1.05rem/1 var(--display);color:var(--milk);background:var(--orange);border:0;border-radius:999px;padding:1em 1.6em;cursor:pointer;transition:transform .2s,background .2s}
+.send button:hover{background:var(--ink)}
+.send button:active{transform:scale(.97)}
+.send button:disabled{opacity:.6;cursor:progress}
+.cstatus{margin:0;font:500 .9rem/1.4 var(--mono);color:var(--ink);min-height:1.4em}
+.cstatus.ok{color:#1F7A3A}.cstatus.err{color:#B3261E}
+.cside{display:grid;gap:14px;justify-items:start}
+.cside .pill{margin:0;color:var(--ink)}
+.cside .mail{font-size:clamp(1.05rem,1.9vw,1.55rem);word-break:normal;overflow-wrap:anywhere}
+.cside .links{margin-top:6px}
+
 .links a{text-decoration:none;font-size:.9rem;padding:.6em 1.1em}
 .links a:hover{background:var(--orange);border-color:var(--orange);color:var(--milk)}
 footer{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:20px clamp(16px,4vw,48px) calc(28px + env(safe-area-inset-bottom,0px));color:var(--ink)}
@@ -146,6 +168,7 @@ footer{display:flex;justify-content:space-between;align-items:center;gap:16px;fl
   .top nav a{padding:.55em .55em;font-size:.74rem}
   .mark{font-size:.82rem;padding:.6em .85em}
   .cols{grid-template-columns:1fr}
+  .cgrid{grid-template-columns:1fr}
   .work{grid-template-columns:auto minmax(0,1fr);row-gap:8px}
   .work p,.work .url{grid-column:2}
   .work .url{justify-self:start}
@@ -282,11 +305,23 @@ footer{display:flex;justify-content:space-between;align-items:center;gap:16px;fl
   <!-- CONTACT -->
   <section class="contact" id="contact">
     <h2 class="big" data-type>Let's build something.</h2>
-    <a class="mail" href="mailto:ntiganzwakt@gmail.com">ntiganzwakt@gmail.com</a>
-    <div class="links">
-      <a class="pill" href="https://www.linkedin.com/in/ntiganzwa-kagimba-theophile-144458251">LinkedIn ↗</a>
-      <a class="pill" href="https://github.com/Freedauce">GitHub ↗</a>
-      <a class="pill" href="https://wa.me/250780873647?text=Hi%20Freedauce%2C%20I%20saw%20your%20portfolio" target="_blank" rel="noopener">WhatsApp ↗</a>
+    <div class="cgrid">
+      <form class="cform" id="cform" novalidate>
+        <div class="field"><label for="cf-name">Your name</label><input id="cf-name" name="name" autocomplete="name" maxlength="120" required></div>
+        <div class="field"><label for="cf-email">Your email</label><input id="cf-email" name="email" type="email" autocomplete="email" maxlength="200" required></div>
+        <div class="field"><label for="cf-msg">Message</label><textarea id="cf-msg" name="message" rows="5" maxlength="5000" required placeholder="Tell me about the role or project."></textarea></div>
+        <div class="hp" aria-hidden="true"><label for="cf-web">Website</label><input id="cf-web" name="website" tabindex="-1" autocomplete="off"></div>
+        <div class="send"><button type="submit" id="cf-btn">Send message</button><p class="cstatus" id="cf-status" role="status" aria-live="polite"></p></div>
+      </form>
+      <div class="cside">
+        <p class="pill">Or reach me directly</p>
+        <a class="mail" href="mailto:ntiganzwakt@gmail.com">ntiganzwakt@gmail.com</a>
+        <div class="links">
+          <a class="pill" href="https://www.linkedin.com/in/ntiganzwa-kagimba-theophile-144458251">LinkedIn ↗</a>
+          <a class="pill" href="https://github.com/Freedauce">GitHub ↗</a>
+          <a class="pill" href="https://wa.me/250780873647?text=Hi%20Freedauce%2C%20I%20saw%20your%20portfolio" target="_blank" rel="noopener">WhatsApp ↗</a>
+        </div>
+      </div>
     </div>
   </section>
 </main>
@@ -413,6 +448,32 @@ footer{display:flex;justify-content:space-between;align-items:center;gap:16px;fl
     });
   },{threshold:.35}).observe(reel);
 
+
+  /* ---------- contact form → /api/contact (emails Freedauce) ---------- */
+  (function(){
+    var f=document.getElementById('cform');if(!f)return;
+    var btn=document.getElementById('cf-btn'),st=document.getElementById('cf-status');
+    function say(t,cls){st.textContent=t;st.className='cstatus'+(cls?' '+cls:'')}
+    f.addEventListener('submit',function(e){
+      e.preventDefault();
+      var d={name:f.name.value.trim(),email:f.email.value.trim(),message:f.message.value.trim(),website:f.website.value};
+      [['name',!d.name],['email',!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email)],['message',d.message.length<10]].forEach(function(x){
+        f[x[0]].closest('.field').classList.toggle('bad',x[1]);
+      });
+      if(!d.name){say('Add your name.','err');f.name.focus();return}
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email)){say('Check your email address.','err');f.email.focus();return}
+      if(d.message.length<10){say('Write a little more in your message.','err');f.message.focus();return}
+      btn.disabled=true;btn.textContent='Sending…';say('');
+      fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)})
+        .then(function(r){return r.json().catch(function(){return{ok:false}})})
+        .then(function(j){
+          if(j.ok){f.reset();say('Message sent. I\'ll reply to your email soon.','ok');btn.textContent='Sent'}
+          else{say(j.error||'Your message could not be sent. Email me directly instead.','err');btn.textContent='Send message'}
+        })
+        .catch(function(){say('Your message could not be sent. Email me directly instead.','err');btn.textContent='Send message'})
+        .then(function(){btn.disabled=false});
+    });
+  })();
   document.getElementById('yr').textContent=new Date().getFullYear();
 })();
 </script>
