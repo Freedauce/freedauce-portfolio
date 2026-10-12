@@ -62,7 +62,7 @@ a:focus-visible,button:focus-visible{outline:2px solid currentColor;outline-offs
   font:400 clamp(3.6rem,15.5vw,15rem)/.86 var(--display);letter-spacing:-.01em;color:var(--milk);
   white-space:nowrap;transition:opacity .6s,transform .9s cubic-bezier(.6,0,.2,1);user-select:none}
 .stage.moving .name{opacity:.16;transform:translateY(-50%) scale(.95)}
-.hex{position:absolute;left:clamp(16px,4vw,48px);top:calc(56% - 2.4rem);color:var(--milk);transition:opacity .5s}
+.hex{position:absolute;z-index:3;left:clamp(16px,4vw,48px);top:calc(56% - 2.4rem);color:var(--milk);transition:opacity .5s}
 .stage.moving .hex{opacity:0}
 #turn{position:absolute;left:50%;top:50%;width:min(80vh,94vw);aspect-ratio:1;will-change:transform;transform:translate(-50%,-44%);display:block;transition:transform .9s cubic-bezier(.6,0,.2,1)}
 .stage[data-side=l] #turn{transform:translate(calc(-50% + 14vw),-44%)}
@@ -137,13 +137,14 @@ footer{display:flex;justify-content:space-between;align-items:center;gap:16px;fl
   .stage{height:340vh}
   .pin{background:linear-gradient(to bottom,var(--orange) 0,var(--orange) 50%,var(--milk) 50%)}
   .name{top:24%}
-  .hex{top:calc(50% - 2.3rem)}
+  .hex{top:calc(72px + env(safe-area-inset-top,0px))}
   #turn,.stage[data-side] #turn{width:min(60vh,100vw);transform:translate(-50%,-62%)}
   .entry{left:16px!important;right:16px!important;width:auto;top:auto;bottom:calc(4vh + env(safe-area-inset-bottom,0px))}
   .entry .note{min-height:0}
   .intro{flex-direction:column;align-items:flex-start;gap:10px}
   .deg{bottom:auto;top:calc(76px + env(safe-area-inset-top,0px));color:var(--milk)}
-  .top nav a{padding:.55em .6em;font-size:.76rem}
+  .top nav a{padding:.55em .55em;font-size:.74rem}
+  .mark{font-size:.82rem;padding:.6em .85em}
   .cols{grid-template-columns:1fr}
   .work{grid-template-columns:auto minmax(0,1fr);row-gap:8px}
   .work p,.work .url{grid-column:2}
@@ -159,7 +160,7 @@ footer{display:flex;justify-content:space-between;align-items:center;gap:16px;fl
 <body>
 <header class="top">
   <a class="mark" href="#top">FREEDAUCE</a>
-  <nav aria-label="Sections"><a href="#clone">Clone</a><a href="#skills">Skills</a><a href="#works">Works</a><a href="#contact">Contact</a></nav>
+  <nav aria-label="Sections"><a href="#skills">Skills</a><a href="#works">Works</a><a href="#contact">Contact</a></nav>
 </header>
 
 <main id="top">
@@ -338,16 +339,20 @@ footer{display:flex;justify-content:space-between;align-items:center;gap:16px;fl
     cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);shown=-1;paint();
   }
   function nearest(i){for(var k=0;k<N;k++){var a=frames[(i+k)%N],b=frames[(i-k+N)%N];if(a&&a.bmp)return a;if(b&&b.bmp)return b}return null}
+  function fit(bm){var w=cv.width,h=cv.height,s=Math.min(w/bm.width,h/bm.height),dw=bm.width*s,dh=bm.height*s;return[(w-dw)/2,(h-dh)/2,dw,dh]}
   function paint(){
-    var i=Math.round(cur*(N-1)),f=nearest(i);if(!f)return;
-    if(shown===i&&f===frames[i])return;shown=f===frames[i]?i:-1;
-    var bm=f.bmp,w=cv.width,h=cv.height,s=Math.min(w/bm.width,h/bm.height),dw=bm.width*s,dh=bm.height*s;
-    ctx.clearRect(0,0,w,h);ctx.drawImage(bm,(w-dw)/2,(h-dh)/2,dw,dh);
+    var x=cur*(N-1),i0=Math.floor(x),i1=Math.min(N-1,i0+1),fr=x-i0;
+    var key=Math.round(x*12);if(key===shown)return;
+    var a=frames[i0]&&frames[i0].bmp?frames[i0]:nearest(i0),b=frames[i1]&&frames[i1].bmp?frames[i1]:null;if(!a)return;
+    shown=(a===frames[i0])?key:-1;
+    ctx.clearRect(0,0,cv.width,cv.height);
+    var r=fit(a.bmp);ctx.globalAlpha=1;ctx.drawImage(a.bmp,r[0],r[1],r[2],r[3]);
+    if(b&&b!==a&&fr>.04){r=fit(b.bmp);ctx.globalAlpha=fr;ctx.drawImage(b.bmp,r[0],r[1],r[2],r[3]);ctx.globalAlpha=1}
   }
   // glide toward the scroll position instead of jumping
   function tick(){
     var d=target-cur;
-    cur=Math.abs(d)<.0008?target:cur+d*(reduce?1:.22);
+    cur=Math.abs(d)<.0004?target:cur+d*(reduce?1:.16);
     paint();
     anim=cur!==target?requestAnimationFrame(tick):0;
   }
