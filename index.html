@@ -339,20 +339,16 @@ footer{display:flex;justify-content:space-between;align-items:center;gap:16px;fl
     cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);shown=-1;paint();
   }
   function nearest(i){for(var k=0;k<N;k++){var a=frames[(i+k)%N],b=frames[(i-k+N)%N];if(a&&a.bmp)return a;if(b&&b.bmp)return b}return null}
-  function fit(bm){var w=cv.width,h=cv.height,s=Math.min(w/bm.width,h/bm.height),dw=bm.width*s,dh=bm.height*s;return[(w-dw)/2,(h-dh)/2,dw,dh]}
   function paint(){
-    var x=cur*(N-1),i0=Math.floor(x),i1=Math.min(N-1,i0+1),fr=x-i0;
-    var key=Math.round(x*12);if(key===shown)return;
-    var a=frames[i0]&&frames[i0].bmp?frames[i0]:nearest(i0),b=frames[i1]&&frames[i1].bmp?frames[i1]:null;if(!a)return;
-    shown=(a===frames[i0])?key:-1;
-    ctx.clearRect(0,0,cv.width,cv.height);
-    var r=fit(a.bmp);ctx.globalAlpha=1;ctx.drawImage(a.bmp,r[0],r[1],r[2],r[3]);
-    if(b&&b!==a&&fr>.04){r=fit(b.bmp);ctx.globalAlpha=fr;ctx.drawImage(b.bmp,r[0],r[1],r[2],r[3]);ctx.globalAlpha=1}
+    var i=Math.round(cur*(N-1)),f=frames[i]&&frames[i].bmp?frames[i]:nearest(i);if(!f)return;
+    var key=f===frames[i]?i:-1-i;if(key===shown)return;shown=key;
+    var bm=f.bmp,w=cv.width,h=cv.height,s=Math.min(w/bm.width,h/bm.height),dw=Math.round(bm.width*s),dh=Math.round(bm.height*s);
+    ctx.clearRect(0,0,w,h);ctx.drawImage(bm,Math.round((w-dw)/2),Math.round((h-dh)/2),dw,dh);
   }
   // glide toward the scroll position instead of jumping
   function tick(){
     var d=target-cur;
-    cur=Math.abs(d)<.0004?target:cur+d*(reduce?1:.16);
+    cur=Math.abs(d)<.0005?target:cur+d*(reduce?1:.2);
     paint();
     anim=cur!==target?requestAnimationFrame(tick):0;
   }
